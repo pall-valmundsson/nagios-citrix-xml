@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Copyright (C) 2014 Pall Valmundsson
+
+import urllib2
+import socket
+from xml.dom.minidom import parseString
+
+from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
+helper = PluginHelper()
+
+helper.parser.add_option("-H",
+    help="Citrix XML host", dest="host")
+helper.parser.add_option("-a",
+    help="Published application name", dest="application")
+helper.parser.add_option("-x",
+    help="XML URI path", dest="xmluri", default="/scripts/WPnBr.dll")
+
+helper.parse_arguments()
+
+hostname = helper.options.host
+application = helper.options.application
+xmluri = helper.options.xmluri
+debug = helper.options.show_debug
+
+if not hostname or not application:
+    helper.parser.error("Missing hostname or application name.")
+
+clientname = socket.gethostname()
+
+xmldata = """<?xml version="1.0"?>
+<!DOCTYPE NFuseProtocol SYSTEM "NFuse.dtd">
+<NFuseProtocol version="1.1"><RequestAddress>
+<Name><UnspecifiedName>%s</UnspecifiedName></Name>
+<ClientName>%s</ClientName>
+<ClientAddress addresstype="dns-port" />
+<ServerAddress addresstype="dns-port" />
+<Flags />
+<Credentials>
+<UserName></UserName>
+<Domain></Domain>
+</Credentials>
+</RequestAddress></NFuseProtocol>""" % (application, clientname)
+
+if debug:
+    print "XML request data:\n%s\n" % xmldata
+
+urlopener = urllib2.build_opener()
+request = urllib2.Request("http://%s/%s" % (hostname, xmluri),
+    data=xmldata, headers={'Content-Type': 'text/xml'})
+response = urlopener.open(request)
+
+respdata = response.read()
+
+if debug:
+    print "XML server response:\n%s\n" % respdata
+
+respxml = parseString(respdata)
+
+nfuseprotocol_elem = respxml.getElementsByTagName('NFuseProtocol')[0]
+responseaddress_elem = nfuseprotocol_elem.getElementsByTagName('ResponseAddress')[0]
+
+# If these elements appear inside ResponseAddress there is a critical error
+critical_nodes = ['ErrorId', 'MPSError', 'BrowserError']
+
+# These nodes will be added to the short summary output for Nagios
+summary_nodes = ['ServerAddress', 'MPSError']
+
+for child in responseaddress_elem.childNodes:
+    if child.nodeType == child.TEXT_NODE:
+        pass
+    else:
+        if child.nodeName in critical_nodes:
+            helper.status(critical)
+
+        if child.nodeName in summary_nodes:
+            helper.add_summary("%s: %s" % (child.nodeName, child.childNodes[0].data))
+        else:
+            helper.add_long_output("%s: %s" % (child.nodeName, child.childNodes[0].data))
+
+helper.status(ok)
+helper.check_all_metrics()
+helper.exit()

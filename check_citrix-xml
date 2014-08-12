@@ -93,7 +93,7 @@ try:
                 helper.add_long_output("%s: %s" % (child.nodeName, child.childNodes[0].data))
 except urllib2.HTTPError, e:
     helper.status(critical)
-    helper.add_summary("HTTP Error %s - %s" % (e.code, e.reason))
+    helper.add_summary("HTTP Error %s" % (e.code))
 
 
 helper.status(ok)

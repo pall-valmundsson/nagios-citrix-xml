@@ -6,7 +6,7 @@ Summary:	A Nagios plugin to check the response from a Citrix XML Service
 Group:		Applications/System
 License:	GPLv3+
 URL:		https://github.com/pall-valmundsson/nagios-citrix-xml
-Source0:	https://github.com/pall-valmundsson/nagios-citrix-xml/archive/v%{version}.tar.gz
+Source0:	%{name}-%{version}.tar.gz
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch

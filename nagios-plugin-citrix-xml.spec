@@ -28,7 +28,7 @@ test "x$RPM_BUILD_ROOT" != "x" && rm -rf $RPM_BUILD_ROOT
 install -D -p -m 755 check_citrix-xml %{buildroot}%{_libdir}/nagios/plugins/check_citrix-xml
 
 %files
-%doc README LICENSE
+%doc README.md LICENSE
 %{_libdir}/nagios/plugins/check_citrix-xml
 
 

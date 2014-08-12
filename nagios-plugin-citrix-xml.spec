@@ -1,12 +1,12 @@
 Name:		nagios-plugin-citrix-xml
 Version:	0.1
 Release:	1%{?dist}
-Summary:	A Nagios plugin to check the response from a Citrix XML Broker
+Summary:	A Nagios plugin to check the response from a Citrix XML Service
 
 Group:		Applications/System
 License:	GPLv3+
-URL:		https://github.com/pall-valmundsson/nagios-plugin-citrix-xml
-Source0:	https://github.com/pall-valmundsson/nagios-plugin-citrix-xml/archive/v%{version}.tar.gz
+URL:		https://github.com/pall-valmundsson/nagios-citrix-xml
+Source0:	https://github.com/pall-valmundsson/nagios-citrix-xml/archive/v%{version}.tar.gz
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
@@ -14,7 +14,7 @@ Requires:	pynag >= 0.9.1
 
 
 %description
-A Nagios plugin to check the response from a Citrix XML Broker
+A Nagios plugin to check the response from a Citrix XML Service
 
 %prep
 %setup -q

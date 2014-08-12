@@ -61,35 +61,40 @@ if debug:
 urlopener = urllib2.build_opener()
 request = urllib2.Request("http://%s/%s" % (hostname, xmluri),
     data=xmldata, headers={'Content-Type': 'text/xml'})
-response = urlopener.open(request)
+try:
+    response = urlopener.open(request)
 
-respdata = response.read()
+    respdata = response.read()
 
-if debug:
-    print "XML server response:\n%s\n" % respdata
+    if debug:
+        print "XML server response:\n%s\n" % respdata
 
-respxml = parseString(respdata)
+    respxml = parseString(respdata)
 
-nfuseprotocol_elem = respxml.getElementsByTagName('NFuseProtocol')[0]
-responseaddress_elem = nfuseprotocol_elem.getElementsByTagName('ResponseAddress')[0]
+    nfuseprotocol_elem = respxml.getElementsByTagName('NFuseProtocol')[0]
+    responseaddress_elem = nfuseprotocol_elem.getElementsByTagName('ResponseAddress')[0]
 
-# If these elements appear inside ResponseAddress there is a critical error
-critical_nodes = ['ErrorId', 'MPSError', 'BrowserError']
+    # If these elements appear inside ResponseAddress there is a critical error
+    critical_nodes = ['ErrorId', 'MPSError', 'BrowserError']
 
-# These nodes will be added to the short summary output for Nagios
-summary_nodes = ['ServerAddress', 'MPSError']
+    # These nodes will be added to the short summary output for Nagios
+    summary_nodes = ['ServerAddress', 'MPSError']
 
-for child in responseaddress_elem.childNodes:
-    if child.nodeType == child.TEXT_NODE:
-        pass
-    else:
-        if child.nodeName in critical_nodes:
-            helper.status(critical)
-
-        if child.nodeName in summary_nodes:
-            helper.add_summary("%s: %s" % (child.nodeName, child.childNodes[0].data))
+    for child in responseaddress_elem.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            pass
         else:
-            helper.add_long_output("%s: %s" % (child.nodeName, child.childNodes[0].data))
+            if child.nodeName in critical_nodes:
+                helper.status(critical)
+
+            if child.nodeName in summary_nodes:
+                helper.add_summary("%s: %s" % (child.nodeName, child.childNodes[0].data))
+            else:
+                helper.add_long_output("%s: %s" % (child.nodeName, child.childNodes[0].data))
+except urllib2.HTTPError, e:
+    helper.status(critical)
+    helper.add_summary("HTTP Error %s - %s" % (e.code, e.reason))
+
 
 helper.status(ok)
 helper.check_all_metrics()

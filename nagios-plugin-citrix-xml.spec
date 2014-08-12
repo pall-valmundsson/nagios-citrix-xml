@@ -1,5 +1,5 @@
 Name:		nagios-plugin-citrix-xml
-Version:	0.1
+Version:	0.2
 Release:	1%{?dist}
 Summary:	A Nagios plugin to check the response from a Citrix XML Service
 
@@ -33,5 +33,8 @@ install -D -p -m 755 check_citrix-xml %{buildroot}%{_libdir}/nagios/plugins/chec
 
 
 %changelog
+* Tue Aug 12 2014 Pall Valmundsson <pall.valmundsson@gmail.com> 0.2-1
+- Catch HTTP errors from XML service
+
 * Mon Aug 11 2014 Pall Valmundsson <pall.valmundsson@gmail.com> 0.1-1
 - Initial release
